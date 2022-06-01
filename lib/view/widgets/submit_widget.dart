@@ -59,26 +59,6 @@ class _SubmitWidgetState extends State<SubmitWidget> {
     });
   }
 
-  // _asyncFileUpload(File file, String name, String email, String password,
-  //     String _date, String gender, String status) async {
-  //   var request = http.MultipartRequest(
-  //       "POST", Uri.parse("https://anaajapp.com/api/user/submit_details"));
-
-  //   request.fields["email"] = email;
-  //   request.fields["password"] = password;
-  //   request.fields["name"] = name;
-  //   request.fields["dob"] = _date;
-  //   request.fields["gender"] = status;
-  //   request.fields["user_status"] = gender;
-  //   var pic = await http.MultipartFile.fromPath("image", file.path);
-  //   request.files.add(pic);
-  //   var response = await request.send();
-  //   var responseData = await response.stream.toBytes();
-  //   var responseString = String.fromCharCodes(responseData);
-  //   print(responseString);
-  //   print("Data Send..");
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Form(

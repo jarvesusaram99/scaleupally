@@ -8,7 +8,7 @@ List<String> imagesList = [
 ];
 Widget RatedCard() {
   return Container(
-      height: 225,
+      height: 250,
       child: ListView.builder(
           shrinkWrap: true,
           physics: BouncingScrollPhysics(),
@@ -21,7 +21,7 @@ Widget RatedCard() {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                        height: 220,
+                        height: 230,
                         width: 250,
                         padding: EdgeInsets.all(8),
                         decoration: BoxDecoration(

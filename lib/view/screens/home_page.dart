@@ -23,9 +23,10 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         bottomNavigationBar: Navigation(),
         appBar: CustomAppBar(
-          height: 120,
+          height: 103,
         ),
         body: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
           child: Container(
             padding: EdgeInsets.all(20),
             child: Column(
@@ -71,7 +72,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 const SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
                 ServicesCard(),
                 const SizedBox(
