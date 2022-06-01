@@ -1,12 +1,18 @@
+import 'dart:io';
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:scaleupally/view/widgets/custom_textfiled.dart';
 import 'package:scaleupally/view/widgets/password_textfiled.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:http/http.dart' as http;
+
+import '../../controller/home_controller.dart';
 
 class SubmitWidget extends StatefulWidget {
   const SubmitWidget({Key? key}) : super(key: key);
@@ -16,6 +22,8 @@ class SubmitWidget extends StatefulWidget {
 }
 
 class _SubmitWidgetState extends State<SubmitWidget> {
+  HomeController homeController = Get.put(HomeController());
+  AutovalidateMode _autoValidate = AutovalidateMode.disabled;
   List<String> items = [
     'male',
     'female',
@@ -27,6 +35,49 @@ class _SubmitWidgetState extends State<SubmitWidget> {
   String formatDate = '';
   final formkey = GlobalKey<FormState>();
   TextEditingController _datekey = TextEditingController();
+  TextEditingController _name = TextEditingController();
+  TextEditingController _email = TextEditingController();
+  TextEditingController _passsowrd = TextEditingController();
+  TextEditingController _confirmPass = TextEditingController();
+  TextEditingController _gender = TextEditingController();
+  TextEditingController _state = TextEditingController();
+  bool isObsecure = false;
+  File? _imageFile;
+  final picker = ImagePicker();
+  String downloadImageUrl = '';
+
+  Future pickImage() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pickedFile != null) {
+        _imageFile = File(pickedFile.path);
+        print(_imageFile);
+        print("image selected");
+      } else {
+        print("No image selected");
+      }
+    });
+  }
+
+  // _asyncFileUpload(File file, String name, String email, String password,
+  //     String _date, String gender, String status) async {
+  //   var request = http.MultipartRequest(
+  //       "POST", Uri.parse("https://anaajapp.com/api/user/submit_details"));
+
+  //   request.fields["email"] = email;
+  //   request.fields["password"] = password;
+  //   request.fields["name"] = name;
+  //   request.fields["dob"] = _date;
+  //   request.fields["gender"] = status;
+  //   request.fields["user_status"] = gender;
+  //   var pic = await http.MultipartFile.fromPath("image", file.path);
+  //   request.files.add(pic);
+  //   var response = await request.send();
+  //   var responseData = await response.stream.toBytes();
+  //   var responseString = String.fromCharCodes(responseData);
+  //   print(responseString);
+  //   print("Data Send..");
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -43,43 +94,184 @@ class _SubmitWidgetState extends State<SubmitWidget> {
                 width: 120,
                 child: DottedBorder(
                     borderType: BorderType.RRect,
-                    radius: Radius.circular(5),
+                    radius: const Radius.circular(5),
                     dashPattern: [5, 5],
                     color: Colors.grey,
                     strokeWidth: 2,
                     child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        // crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SvgPicture.asset(
-                            "assets/svg/Group 2848.svg",
-                            height: 30,
-                            width: 30,
-                            color: Colors.grey.shade400,
-                          ),
-                          Text("Upload")
-                        ],
+                      child: InkWell(
+                        onTap: pickImage,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          // crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(
+                              "assets/svg/Group 2848.svg",
+                              height: 30,
+                              width: 30,
+                              color: Colors.grey.shade400,
+                            ),
+                            const Text("Upload")
+                          ],
+                        ),
                       ),
                     )),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
-            CustomTextField(hintext: "Full Name"),
-            SizedBox(
+            CustomTextField(
+              textInputAction: TextInputAction.next,
+              hintext: "Full Name",
+              controllers: _name,
+              autovalidateMode: _autoValidate,
+              isemail: false,
+            ),
+            const SizedBox(
               height: 20,
             ),
-            CustomTextField(hintext: "Email Id"),
-            SizedBox(
+            CustomTextField(
+              textInputAction: TextInputAction.next,
+              hintext: "Email Id",
+              controllers: _email,
+              autovalidateMode: _autoValidate,
+              isemail: true,
+            ),
+            const SizedBox(
               height: 20,
             ),
-            PasswordTextField(hintext: "Create Password"),
-            SizedBox(
+            TextFormField(
+                obscureText: isObsecure,
+                textInputAction: TextInputAction.next,
+                controller: _passsowrd,
+                keyboardType: TextInputType.visiblePassword,
+                autovalidateMode: _autoValidate,
+                validator: (value) {
+                  bool isUpperCase = RegExp("(?=.*[A-Z])").hasMatch(value!);
+                  bool isSpecialCharacter =
+                      RegExp("(?=.*[!@#\$%^&*(),.?:{}|<>].*)").hasMatch(value);
+
+                  if (value.isEmpty) {
+                    return 'Please enter password';
+                  } else if (value.length <= 7) {
+                    return "Password must be at least 8 character ";
+                  } else if (!isUpperCase) {
+                    return "Password must  1 uppercase letter ";
+                  } else if (!isSpecialCharacter) {
+                    return "Password must  1 special character letter ";
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      isObsecure ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        isObsecure = !isObsecure;
+                      });
+                    },
+                  ),
+                  hintText: "Enter Password",
+                  hintStyle: TextStyle(color: Colors.grey.shade500),
+                  fillColor: Colors.white,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Colors.red.shade200,
+                    ),
+                  ),
+                  // border: InputBorder.none,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                    borderSide: BorderSide(
+                      width: 1,
+                    ),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
+                      borderSide: BorderSide(
+                        width: 1,
+                        color: Colors.red.shade200,
+                      )),
+                  focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
+                      borderSide: BorderSide(
+                        width: 1,
+                        color: Colors.red.shade200,
+                      )),
+                )),
+            const SizedBox(
               height: 20,
             ),
-            PasswordTextField(hintext: "Confirm Password"),
+            TextFormField(
+                obscureText: isObsecure,
+                textInputAction: TextInputAction.next,
+                controller: _confirmPass,
+                keyboardType: TextInputType.visiblePassword,
+                autovalidateMode: _autoValidate,
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter password';
+                  } else if (value != _passsowrd.text) {
+                    return "Password must be same ";
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      isObsecure ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        isObsecure = !isObsecure;
+                      });
+                    },
+                  ),
+                  hintText: "Enter Password",
+                  hintStyle: TextStyle(color: Colors.grey.shade500),
+                  fillColor: Colors.white,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Colors.red.shade200,
+                    ),
+                  ),
+                  // border: InputBorder.none,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                    borderSide: BorderSide(
+                      width: 1,
+                    ),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
+                      borderSide: BorderSide(
+                        width: 1,
+                        color: Colors.red.shade200,
+                      )),
+                  focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
+                      borderSide: BorderSide(
+                        width: 1,
+                        color: Colors.red.shade200,
+                      )),
+                )),
             const SizedBox(
               height: 20,
             ),
@@ -121,7 +313,7 @@ class _SubmitWidgetState extends State<SubmitWidget> {
                 },
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             TextField(
@@ -216,23 +408,53 @@ class _SubmitWidgetState extends State<SubmitWidget> {
               height: 20,
             ),
             InkWell(
-              onTap: () {
+              onTap: () async {
                 if (formkey.currentState!.validate()) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Processing Data')),
-                  );
+                  if (_imageFile == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Plese select image')));
+                  } else if (status == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Plese select status type')));
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Processing Data')),
+                    );
+                    homeController.getSubmitDetail(
+                        file: _imageFile!,
+                        name: _name.text.toString(),
+                        email: _email.text.trim(),
+                        password: _passsowrd.toString(),
+                        date: formatDate,
+                        gender: gender,
+                        status: status!);
+                  }
+
+                  Future.delayed(Duration(seconds: 1), () {
+                    if (homeController.regirsterModel!.message ==
+                        "Register successfully") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Register Sucessfull')));
+                    }
+
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(homeController.regirsterModel!.errorMsg
+                            .toString())));
+
+                    // Do something
+                  });
+                } else {
+                  setState(() => _autoValidate = AutovalidateMode.always);
                 }
-                // _asyncFileUpload(_imageFile!, name, email, password,
-                //     formattedDate, gender, status!);
               },
               child: Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                    color: Color(0xff1D2677),
+                    color: const Color(0xff1D2677),
                     borderRadius: BorderRadius.circular(8)),
                 height: 48,
                 width: MediaQuery.of(context).size.width,
-                child: Text(
+                child: const Text(
                   "Submit",
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.bold),

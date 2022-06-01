@@ -4,6 +4,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:scaleupally/utility/colors_data.dart';
 import 'package:scaleupally/view/widgets/custom_appbar.dart';
+import 'package:scaleupally/view/widgets/custom_navbar.dart';
 import 'package:scaleupally/view/widgets/rated_card.dart';
 import 'package:scaleupally/view/widgets/services_card.dart';
 import 'package:scaleupally/view/widgets/submit_widget.dart';
@@ -20,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        bottomNavigationBar: Navigation(),
         appBar: CustomAppBar(
           height: 120,
         ),
@@ -71,7 +73,7 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 20,
                 ),
-                Servicescard(),
+                ServicesCard(),
                 const SizedBox(
                   height: 24,
                 ),
@@ -81,7 +83,7 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 24,
                 ),
-                SubmitWidget()
+                const SubmitWidget()
               ],
             ),
           ),
